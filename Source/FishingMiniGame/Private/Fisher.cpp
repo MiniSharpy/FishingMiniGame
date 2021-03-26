@@ -2,7 +2,10 @@
 
 
 #include "Fisher.h"
+#include "Fish.h"
 #include "Kismet/KismetMathLibrary.h"
+
+//TODO: Put contents of switch statements in methods for readibility.
 
 // Sets default values
 AFisher::AFisher()
@@ -101,66 +104,131 @@ void AFisher::OnFailure()
 	{
 		AttachedFish = nullptr;
 	}
-	CastWidget->bHiddenInGame = false;
-	PlayerState = EPlayerState::Idle;
+	CastWidget->SetVisibility(true);
+	FisherState = EFisherState::Idle;
 	CastStrength = 0;
 	CastTime = 0;
 	ReelWidget->SetVisibility(ESlateVisibility::Hidden);
+	ReelLives = 4;//May want avoid hard coding this in case I want to increase this through gameplay items like rods.
 }
 
 void AFisher::OnSuccess()
 {
-	//Do level stuff.
+	//Do level stuff. Also Reset.
+}
+
+void AFisher::DecreaseReelLives()
+{
+	ReelLives -= 1;
+	ReelWidgetPosition = 0;
 }
 
 void AFisher::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	PawnDeltaTime = DeltaTime;
 	SetCastWidgetRotation();
 
-	switch (PlayerState)
+	switch (FisherState)
 	{
-	case EPlayerState::Casting:
+	case EFisherState::Casting:
 		SetCastStrength(DeltaTime);
 		break;
-	case EPlayerState::Casted:
-		break;
-	case EPlayerState::Reeling:
+	case EFisherState::Reeling:
+		ReelWidgetTime += DeltaTime;
+		if (ReelWidgetTime >= ReelWidgetUpdateDuration)
+		{
+			SetReelingWidgetPosition();
+			ReelWidgetTime = 0.f;
+		}
+
+		if (ReelWidgetPosition >= 0.98)
+		{
+			DecreaseReelLives();
+		}
+		
+		if (ReelLives <= 0)
+		{
+			OnFailure();
+		}
 		break;
 	default: //Idle
 		break;
 	}
 }
 
+EFisherState AFisher::GetPlayerState()
+{
+		return FisherState;
+}
+
 void AFisher::CastReel()
 {
-	switch (PlayerState)
+	switch (FisherState)
 	{
-	case EPlayerState::Casting:
+	case EFisherState::Casting:
 		SetCastPoint();
-		CastWidget->SetHiddenInGame(true);
-		PlayerState = EPlayerState::Casted;
+		CastWidget->SetVisibility(false);
+		FisherState = EFisherState::Casted;
 		break;
-	case EPlayerState::Casted:
+	case EFisherState::Casted:
 		if (AttachedFish)
 		{
-			CastPoint.Z = 100.f; //Move bait position somewhere impossible to prevent issues.
 			ReelWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
-			PlayerState = EPlayerState::Reeling;
+			FisherState = EFisherState::Reeling;
 		}
 		else
 		{
 			OnFailure();
 		}
 		break;
-	case EPlayerState::Reeling:
+	case EFisherState::Reeling:
+		if (UKismetMathLibrary::Abs(ReelWidgetPosition) < 0.25)
+		{
+			AttachedFish->Pull();
+		}
+		else if (UKismetMathLibrary::Abs(ReelWidgetPosition) > 0.8)
+		{
+			DecreaseReelLives();
+		}
 		break;
 	default: //Idle
-		PlayerState = EPlayerState::Casting;
+		FisherState = EFisherState::Casting;
 		break;
 	}
 }
+
+void AFisher::SetReelingWidgetPosition()
+{
+	//Assumes X is the world forward. Kinda hard codey.
+	FVector FishVelocity = AttachedFish->GetVelocity();
+	FishVelocity.Normalize();
+	
+	float Horizontal = FishVelocity.Y;
+
+	//Want to be between 0.3 and 0.8 on both sides of 0.
+	float ClampedPostiveHorizontal =  FMath::Clamp(UKismetMathLibrary::Abs(Horizontal), 0.3f, 0.8f);
+	Horizontal = (Horizontal > 0) ? ClampedPostiveHorizontal : -ClampedPostiveHorizontal;
+	
+	ReelWidgetPosition += Horizontal;
+	ReelWidgetPosition = FMath::Clamp(ReelWidgetPosition, -1.f, 1.f);
+}
+
+void AFisher::AddReelWidgetPosition(float Value)
+{
+	if (FisherState != EFisherState::Reeling) { return; }
+	
+	//Only uses value to check if pos or neg. Feels kinda meh.
+	if (Value > 0)
+	{
+		ReelWidgetPosition += ReelWidgetInputSensitivity * PawnDeltaTime;
+	}
+	else if (Value < 0)
+	{
+		ReelWidgetPosition -= ReelWidgetInputSensitivity * PawnDeltaTime;
+	}
+}
+
 FVector AFisher::GetCastPoint() const
 {
 	return CastPoint;
@@ -171,11 +239,10 @@ void AFisher::SetAttachedFish(AFish* BaitedFish)
 	AttachedFish = BaitedFish;
 }
 
-
-
 // Called to bind functionality to input
 void AFisher::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Cast/Reel", IE_Pressed, this, &AFisher::CastReel);
+	PlayerInputComponent->BindAxis("ReelDirection",this, &AFisher::AddReelWidgetPosition);
 }

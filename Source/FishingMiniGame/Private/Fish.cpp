@@ -2,8 +2,6 @@
 
 
 #include "Fish.h"
-
-
 #include "Fisher.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -49,8 +47,18 @@ void AFish::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (IsCastPointInRange())
+	if (IsCastPointInRange() && Fisher->GetPlayerState() == EFisherState::Casted)
 	{
+		//Kill movement. Break after X time and set fail for player?
 		Fisher->SetAttachedFish(this);
+	}
+
+	if (Fisher->GetPlayerState() ==  EFisherState::Reeling)
+	{
+		Escape();//Try to stick around bait point. Tugs on ReelWidget will be determined by direction.
+	}
+	else
+	{
+		Move();
 	}
 }

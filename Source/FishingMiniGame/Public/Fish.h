@@ -19,6 +19,13 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	//Prototype functionality in BP.
+	UFUNCTION(BlueprintImplementableEvent)
+	void Escape();
+	//Prototype functionality in BP.
+	UFUNCTION(BlueprintImplementableEvent)
+	void Move();
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* FishMesh;
@@ -37,4 +44,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	//Pulls the fish towards the fisher.
+	UFUNCTION(BlueprintImplementableEvent)
+    void Pull();
 };

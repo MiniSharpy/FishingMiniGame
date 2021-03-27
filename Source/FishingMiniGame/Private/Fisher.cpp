@@ -142,7 +142,7 @@ void AFisher::Tick(float DeltaTime)
 			ReelWidgetTime = 0.f;
 		}
 
-		if (ReelWidgetPosition >= 0.98)
+		if (ReelWidgetPosition >= 0.98 || ReelWidgetPosition <= -0.98)//If maxed out the widget ends fail.
 		{
 			DecreaseReelLives();
 		}
@@ -157,7 +157,7 @@ void AFisher::Tick(float DeltaTime)
 	}
 }
 
-EFisherState AFisher::GetPlayerState()
+EFisherState AFisher::GetFisherState()
 {
 		return FisherState;
 }
@@ -206,7 +206,7 @@ void AFisher::SetReelingWidgetPosition()
 	
 	float Horizontal = FishVelocity.Y;
 
-	//Want to be between 0.3 and 0.8 on both sides of 0.
+	//Want to be between 0.3 to 0.8 and -0.3 to -0.8.
 	float ClampedPostiveHorizontal =  FMath::Clamp(UKismetMathLibrary::Abs(Horizontal), 0.3f, 0.8f);
 	Horizontal = (Horizontal > 0) ? ClampedPostiveHorizontal : -ClampedPostiveHorizontal;
 	
@@ -237,6 +237,11 @@ FVector AFisher::GetCastPoint() const
 void AFisher::SetAttachedFish(AFish* BaitedFish)
 {
 	AttachedFish = BaitedFish;
+}
+
+AFish* AFisher::GetAttachedFish()
+{
+		return AttachedFish;
 }
 
 // Called to bind functionality to input

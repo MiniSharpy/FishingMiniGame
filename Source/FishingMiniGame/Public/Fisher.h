@@ -78,7 +78,7 @@ protected:
 	float CastTime;
 #pragma endregion Casting
 
-#pragma region ReelingVariables
+#pragma region Reeling
 	void SetReelingWidgetPosition();
 	void AddReelWidgetPosition(float Value);
 	void DecreaseReelLives();
@@ -91,7 +91,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Reeling") 
 	float ReelWidgetPosition;
 	//This is to add the ReelingWidgetPosition every x seconds.
-	float ReelWidgetTime;
+	float ReelWidgetTime;		
 	UPROPERTY(EditDefaultsOnly, Category="Reeling")
 	//How many seconds to wait before getting new values for the reel widget.
 	float ReelWidgetUpdateDuration = 2.5f;//Might want to randomise each time?
@@ -102,16 +102,16 @@ protected:
 	//How many chances the fisher gets if they attempt to pull when in the red zone, or if they max out ReelWidgetPosition.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Reeling")
 	int ReelLives = 4;
-	
-#pragma endregion ReelingVariables
+#pragma endregion Reeling
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	EFisherState GetPlayerState();
+	EFisherState GetFisherState();
 	FVector GetCastPoint() const;
 	void SetAttachedFish(AFish* BaitedFish);
+	AFish* GetAttachedFish();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

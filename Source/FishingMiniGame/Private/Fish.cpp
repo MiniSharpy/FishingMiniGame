@@ -28,11 +28,14 @@ void AFish::BeginPlay()
 
 bool AFish::IsCastPointInRange() const
 {
-	FVector BaitDirection = Fisher->GetCastPoint() - GetActorLocation();
-	BaitDirection.Normalize();
-	float DirectionDotProduct = FVector::DotProduct(GetActorForwardVector(), BaitDirection);//Maybe for ease convert to angle?
+	//Need to ensure that all calculations are on the same level. Might be best to switch to FVector2D?
+	FVector SameZActorLocation = GetActorLocation();
+	SameZActorLocation.Z = Fisher->GetCastPoint().Z;
 
-	float Distance = FVector::Distance(Fisher->GetCastPoint(), GetActorLocation());
+	FVector BaitDirection = Fisher->GetCastPoint() - SameZActorLocation;
+	BaitDirection.Normalize();
+	float DirectionDotProduct = FVector::DotProduct(GetActorForwardVector(), BaitDirection);//Maybe for designer ease convert to angle?
+	float Distance = FVector::Distance(Fisher->GetCastPoint(), SameZActorLocation);
 
 	if (Distance <= Range && DirectionDotProduct >= FOV)
 	{
@@ -47,13 +50,13 @@ void AFish::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (IsCastPointInRange() && Fisher->GetPlayerState() == EFisherState::Casted)
+	if (Fisher->GetFisherState() == EFisherState::Casted && IsCastPointInRange())
 	{
-		//Kill movement. Break after X time and set fail for player?
+		//Kill movement. Break after X time and call OnFailure() in fisher?
 		Fisher->SetAttachedFish(this);
 	}
 
-	if (Fisher->GetPlayerState() ==  EFisherState::Reeling)
+	if (Fisher->GetAttachedFish() == this && Fisher->GetFisherState() == EFisherState::Reeling)//Originally had a bool, IsAttached, but this means it would manually need to be reset. Also need to wait for user to click before trying to escape.
 	{
 		Escape();//Try to stick around bait point. Tugs on ReelWidget will be determined by direction.
 	}

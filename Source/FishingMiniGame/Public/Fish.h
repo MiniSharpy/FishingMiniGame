@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "AIController.h"
 #include "GameFramework/Pawn.h"
 #include "Fish.generated.h"
 
@@ -19,12 +21,12 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	//Prototype functionality in BP.
-	UFUNCTION(BlueprintImplementableEvent)
-	void Escape();
-	//Prototype functionality in BP.
-	UFUNCTION(BlueprintImplementableEvent)
+	void Escape(float DeltaTime);
 	void Move();
+
+	//Rotates the actor to look in the direction of acceleration.
+	void LookWhereMoving();
+	bool IsCastPointInRange() const;
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -36,16 +38,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Casting")
 	//Not exactly FOV. In range 0-1.
 	float FOV = 0.8f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Casting")
+	//The time in which to wait before changing escape goal.
+	float EscapeGoalMaxTime = 5;
+	//The elapsed time before changing escape goal. Want the first run to be instant.
+	float EscapeGoalTime;
 	
-	bool IsCastPointInRange() const;
-
+	AAIController* AIController;
 	AFisher* Fisher;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	//Pulls the fish towards the fisher.
-	UFUNCTION(BlueprintImplementableEvent)
+	//Pulls the fish towards the fisher. Called in Fisher.cpp
     void Pull();
 };

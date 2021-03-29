@@ -206,8 +206,9 @@ void AFisher::SetReelingWidgetPosition()
 	
 	float Horizontal = FishVelocity.Y;
 
-	//Want to be between 0.3 to 0.8 and -0.3 to -0.8.
-	float ClampedPostiveHorizontal =  FMath::Clamp(UKismetMathLibrary::Abs(Horizontal), 0.3f, 0.8f);
+	//Want to be between min to max and -min to -max. Be caution of setting the max value something which might cause
+	//life loss instantly.
+	float ClampedPostiveHorizontal =  FMath::Clamp(UKismetMathLibrary::Abs(Horizontal), 0.3f, 0.6f);
 	Horizontal = (Horizontal > 0) ? ClampedPostiveHorizontal : -ClampedPostiveHorizontal;
 	
 	ReelWidgetPosition += Horizontal;

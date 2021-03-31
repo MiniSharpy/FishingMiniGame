@@ -26,22 +26,17 @@ void AFisher::BeginPlay()
 
 	//PlayerController = GetController<APlayerController>(); //Controllers don't exist until game is play is started.
 	PlayerController = Cast<APlayerController>(GetController());
-	if (!PlayerController) //Ensuring player controller exists.
-	{
-		UE_LOG(LogTemp, Fatal, TEXT("%s is missing a player controller"), *GetName())
-	}
+	check(PlayerController != nullptr);
 	PlayerController->bShowMouseCursor = true;
 
 	//Initialise CastWidget
 	CastWidgetStartingRotation = CastWidget->GetComponentRotation();
 	SetCastWidgetLength();
 
+	
+	
 	//Initialise ReelWidget
-	if (!ReelWidget) //Ensuring player controller exists.
-	{
-		UE_LOG(LogTemp, Fatal, TEXT("%s is missing ReelWidget"), *GetName())
-	}
-
+	check(ReelWidget != nullptr);
 	ReelWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 

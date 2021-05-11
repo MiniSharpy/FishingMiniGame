@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -33,7 +31,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	void OnFailure();
 	UFUNCTION(BlueprintCallable)
 	void OnSuccess();//Called in level blueprint.
 
@@ -107,13 +104,11 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	UFUNCTION(BlueprintGetter)
 	EFisherState GetFisherState();
 	FVector GetCastPoint() const;
 	void SetAttachedFish(AFish* BaitedFish);
 	AFish* GetAttachedFish();
-
+	void OnFailure();
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-};
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) ov

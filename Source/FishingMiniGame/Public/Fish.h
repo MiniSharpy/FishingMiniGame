@@ -47,6 +47,11 @@ protected:
 	AAIController* AIController;
 	AFisher* Fisher;
 
+	void OnFailure();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Casting")
+	float MaxEscapeTime = 2.f;
+	float EscapeTime;
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

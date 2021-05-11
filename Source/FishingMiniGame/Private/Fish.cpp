@@ -104,6 +104,11 @@ bool AFish::IsCastPointInRange() const
 	return false;
 }
 
+void AFish::OnFailure()
+{
+	Fisher->OnFailure();
+}
+
 // Called every frame
 void AFish::Tick(float DeltaTime)
 {
@@ -113,12 +118,17 @@ void AFish::Tick(float DeltaTime)
 	
 	if (Fisher->GetFisherState() == EFisherState::Casted && IsCastPointInRange())
 	{
-		//Kill movement. Break after X time and call OnFailure() in fisher?
+		//Kill movement.
 		Fisher->SetAttachedFish(this);
+		EscapeTime += DeltaTime;
+		if (EscapeTime >= MaxEscapeTime)
+		{
+			OnFailure();
+		}
 	}
-
-	if (Fisher->GetAttachedFish() == this && Fisher->GetFisherState() == EFisherState::Reeling)//Originally had a bool, IsAttached, but this means it would manually need to be reset. Also need to wait for user to click before trying to escape.
+	else if (Fisher->GetAttachedFish() == this && Fisher->GetFisherState() == EFisherState::Reeling)//Originally had a bool, IsAttached, but this means it would manually need to be reset. Also need to wait for user to click before trying to escape.
 	{
+		EscapeTime = 0.f;
 		Escape(DeltaTime);
 	}
 	else
